@@ -3,9 +3,6 @@
 Override the new tab page with your favorite links grouped in lists.
 This extension gives you a clean and simple way to organize your favorite links. With Listify you can create lists and add links into them. Lists are available on every new tab.
 
-## Downloads
-https://chrome.google.com/webstore/detail/listify/mlhjeoigdikenhhnaclhkmeajillnifo?hl=en-GB&authuser=0
-
 ## Changelog
 
 * v2.1.0 - Storage stats added; visual bug fix; new icon.
