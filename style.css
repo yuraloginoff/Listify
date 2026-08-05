@@ -177,6 +177,22 @@ input { font: inherit; color: inherit; }
 
 .search-bar input::placeholder { color: var(--color-text-faint); }
 
+.search-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-right: -4px;
+}
+
+.search-submit:hover {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
 /* === Clock === */
 .header-clock {
   display: flex;
@@ -412,14 +428,30 @@ input { font: inherit; color: inherit; }
 }
 
 .link-actions {
+  position: absolute;
+  right: var(--space-2);
   display: flex;
   gap: var(--space-1);
   opacity: 0;
   transition: opacity var(--transition);
-  flex-shrink: 0;
+  pointer-events: none;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
 }
 
-.link-item:hover .link-actions { opacity: 1; }
+.link-item:hover .link-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.link-action-btn.move {
+  color: var(--color-text-faint);
+}
+
+.link-action-btn:disabled {
+  cursor: default;
+}
 
 .link-action-btn {
   display: flex;
@@ -554,7 +586,7 @@ input { font: inherit; color: inherit; }
   color: var(--color-text-muted);
 }
 
-.field input {
+.field input, .field-select {
   padding: var(--space-3) var(--space-4);
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
@@ -564,12 +596,21 @@ input { font: inherit; color: inherit; }
   outline: none;
 }
 
+.field-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
 .field input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
-.field input::placeholder { color: var(--color-text-faint); }
+.field input::placeholder, .field-select::placeholder { color: var(--color-text-faint); }
 
 .modal-actions {
   display: flex;

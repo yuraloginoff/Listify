@@ -31,6 +31,7 @@
   const board = document.getElementById('board');
   const emptyState = document.getElementById('emptyState');
   const searchInput = document.getElementById('search');
+  const linkGroupSelect = document.getElementById('linkGroupSelect');
 
   const groupModal = document.getElementById('groupModal');
   const groupInput = document.getElementById('groupInput');
@@ -45,6 +46,9 @@
   const confirmModal = document.getElementById('confirmModal');
   const confirmTitle = document.getElementById('confirmTitle');
   const confirmText = document.getElementById('confirmText');
+
+  // ---- Title auto-fetch state ----
+  let titleFetchController = null;
 
   // ---- Persistence ----
   function load() {
@@ -145,24 +149,7 @@
   }
 
   // ---- Render ----
-  function getFilteredGroups() {
-    const query = searchInput.value.trim().toLowerCase();
-    if (!query) return state.groups;
-
-    return state.groups
-      .map(g => ({
-        ...g,
-        links: g.links.filter(l =>
-          l.title.toLowerCase().includes(query) ||
-          getDomain(l.url).toLowerCase().includes(query)
-        )
-      }))
-      .filter(g => g.links.length > 0);
-  }
-
   function render() {
-    const groups = getFilteredGroups();
-
     if (state.groups.length === 0) {
       board.innerHTML = '';
       emptyState.hidden = false;
@@ -170,18 +157,13 @@
     }
 
     emptyState.hidden = true;
-
-    if (groups.length === 0) {
-      board.innerHTML = '<p style="color: var(--color-text-faint); text-align: center; padding: 4rem 1rem; grid-column: 1 / -1;">No links match your search.</p>';
-      return;
-    }
-
-    board.innerHTML = groups.map(renderGroup).join('');
+    board.innerHTML = state.groups.map(renderGroup).join('');
   }
 
   function renderGroup(group) {
-    const linksHtml = group.links.length > 0
-      ? `<ul class="links-list">${group.links.map(l => renderLink(group.id, l)).join('')}</ul>`
+    const total = group.links.length;
+    const linksHtml = total > 0
+      ? `<ul class="links-list">${group.links.map((l, i) => renderLink(group.id, l, i, total)).join('')}</ul>`
       : '<p class="group-empty">No links yet</p>';
 
     return `
@@ -210,7 +192,7 @@
     `;
   }
 
-  function renderLink(groupId, link) {
+  function renderLink(groupId, link, index, total) {
     const faviconUrl = getFaviconUrl(link.url);
     const domain = getDomain(link.url);
     const initial = getInitial(link.title);
@@ -225,6 +207,12 @@
           <a class="link-title" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.title)}</a>
         </div>
         <div class="link-actions">
+          <button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', -1)" ${index === 0 ? 'disabled style="opacity:0.3"' : ''} title="Move up" aria-label="Move up">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+          <button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', 1)" ${index === total - 1 ? 'disabled style="opacity:0.3"' : ''} title="Move down" aria-label="Move down">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
           <button class="link-action-btn" onclick="App.openLinkModal('${link.id}', '${groupId}')" title="Edit link" aria-label="Edit link">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
@@ -288,7 +276,33 @@
     );
   }
 
+  // ---- Title auto-fetch from URL ----
+  async function fetchTitle(url) {
+    if (titleFetchController) titleFetchController.abort();
+    titleFetchController = new AbortController();
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    try {
+      const resp = await fetch(proxyUrl, { signal: titleFetchController.signal });
+      const html = await resp.text();
+      const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        console.error('Title fetch failed:', e);
+      }
+    }
+    return '';
+  }
+
   // ---- Link CRUD ----
+  function populateGroupSelect(selectedId) {
+    linkGroupSelect.innerHTML = state.groups.map(g =>
+      `<option value="${g.id}" ${g.id === selectedId ? 'selected' : ''}>${escapeHtml(g.name)}</option>`
+    ).join('');
+  }
+
   function openLinkModal(linkId, groupId) {
     const group = state.groups.find(g => g.id === groupId);
     if (!group) return;
@@ -298,28 +312,26 @@
       if (!link) return;
       editingLink = { groupId, linkId };
       linkModalTitle.textContent = 'Edit Link';
-      linkTitleInput.value = link.title;
       linkUrlInput.value = link.url;
+      linkTitleInput.value = link.title;
     } else {
       editingLink = { groupId, linkId: null };
       linkModalTitle.textContent = 'New Link';
-      linkTitleInput.value = '';
       linkUrlInput.value = '';
+      linkTitleInput.value = '';
     }
+    populateGroupSelect(groupId);
     linkModalHint.textContent = '';
     linkModal.hidden = false;
-    setTimeout(() => linkTitleInput.focus(), 50);
+    setTimeout(() => linkUrlInput.focus(), 50);
   }
 
   function saveLink() {
     if (!editingLink) return;
     const title = linkTitleInput.value.trim();
     const url = linkUrlInput.value.trim();
+    const targetGroupId = linkGroupSelect.value;
 
-    if (!title) {
-      linkTitleInput.focus();
-      return;
-    }
     if (!url) {
       linkModalHint.textContent = 'URL is required.';
       linkUrlInput.focus();
@@ -330,19 +342,35 @@
       linkUrlInput.focus();
       return;
     }
+    if (!title) {
+      linkModalHint.textContent = 'Title is required (auto-filled when you paste a URL).';
+      linkTitleInput.focus();
+      return;
+    }
 
     const normalized = normalizeUrl(url);
-    const group = state.groups.find(g => g.id === editingLink.groupId);
-    if (!group) return;
+    const oldGroupId = editingLink.groupId;
+    const oldGroup = state.groups.find(g => g.id === oldGroupId);
+    if (!oldGroup) return;
 
     if (editingLink.linkId) {
-      const link = group.links.find(l => l.id === editingLink.linkId);
+      const link = oldGroup.links.find(l => l.id === editingLink.linkId);
       if (link) {
         link.title = title;
         link.url = normalized;
+        // Move to different group if changed
+        if (targetGroupId !== oldGroupId) {
+          oldGroup.links = oldGroup.links.filter(l => l.id !== editingLink.linkId);
+          const newGroup = state.groups.find(g => g.id === targetGroupId);
+          if (newGroup) {
+            newGroup.links.push(link);
+          }
+        }
       }
     } else {
-      group.links.push({ id: uid(), title, url: normalized });
+      // New link — add to selected group
+      const targetGroup = state.groups.find(g => g.id === targetGroupId) || oldGroup;
+      targetGroup.links.push({ id: uid(), title, url: normalized });
     }
 
     save();
@@ -351,6 +379,7 @@
   }
 
   function closeLinkModal() {
+    if (titleFetchController) { titleFetchController.abort(); titleFetchController = null; }
     linkModal.hidden = true;
     editingLink = null;
     linkTitleInput.value = '';
@@ -372,6 +401,18 @@
         render();
       }
     );
+  }
+
+  function moveLink(groupId, linkId, direction) {
+    const group = state.groups.find(g => g.id === groupId);
+    if (!group) return;
+    const index = group.links.findIndex(l => l.id === linkId);
+    if (index === -1) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= group.links.length) return;
+    [group.links[index], group.links[newIndex]] = [group.links[newIndex], group.links[index]];
+    save();
+    render();
   }
 
   // ---- Confirm Modal ----
@@ -506,11 +547,31 @@
     // Link modal
     document.getElementById('linkSaveBtn').addEventListener('click', saveLink);
     document.getElementById('linkCancelBtn').addEventListener('click', closeLinkModal);
-    linkTitleInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); linkUrlInput.focus(); }
-    });
     linkUrlInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); linkTitleInput.focus(); }
+    });
+    linkTitleInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); saveLink(); }
+    });
+
+    // Auto-fetch title when URL field loses focus
+    linkUrlInput.addEventListener('blur', async () => {
+      const url = linkUrlInput.value.trim();
+      if (!url || !isValidUrl(url)) return;
+      // Only auto-fill if title is empty (don't overwrite user edits)
+      if (linkTitleInput.value.trim()) return;
+      linkModalHint.textContent = 'Fetching page title...';
+      const normalized = normalizeUrl(url);
+      const title = await fetchTitle(normalized);
+      if (title) {
+        // Only set if user hasn't typed anything while we were fetching
+        if (!linkTitleInput.value.trim()) {
+          linkTitleInput.value = title;
+          linkModalHint.textContent = '';
+        }
+      } else {
+        linkModalHint.textContent = 'Could not fetch title automatically. Please enter it manually.';
+      }
     });
 
     // Confirm modal
@@ -543,8 +604,7 @@
       }
     });
 
-    // Search
-    searchInput.addEventListener('input', render);
+    // Search — no longer filters links, submits to DuckDuckGo via form
 
     // Keyboard
     document.addEventListener('keydown', handleKeydown);
@@ -558,6 +618,7 @@
     deleteGroup,
     openLinkModal,
     deleteLink,
+    moveLink,
   };
 
   // ---- Boot ----
