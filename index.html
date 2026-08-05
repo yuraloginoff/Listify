@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Personal start page with organized link collections">
+  <title>Listify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f98a3' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="logo" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+        </svg>
+        <span class="brand-name">Listify</span>
+      </div>
+
+      <div class="search-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="search" placeholder="Search links..." autocomplete="off">
+      </div>
+
+      <div class="header-clock" id="clock">
+        <span class="clock-time" id="clockTime">--:--</span>
+        <span class="clock-date" id="clockDate"></span>
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="exportBtn" title="Export backup" aria-label="Export backup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="icon-btn" id="importBtn" title="Import backup" aria-label="Import backup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button class="icon-btn" data-theme-toggle aria-label="Switch to light mode">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
+        <button class="btn btn-primary" id="addGroupBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          New Group
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="board" id="board"></div>
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState" hidden>
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      <h2>No groups yet</h2>
+      <p>Create your first group of links to get started.</p>
+      <button class="btn btn-primary" onclick="document.getElementById('addGroupBtn').click()">Create a group</button>
+    </div>
+  </main>
+
+  <!-- Group Modal -->
+  <div class="modal-overlay" id="groupModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="groupModalTitle">
+      <h3 class="modal-title" id="groupModalTitle">New Group</h3>
+      <label class="field">
+        <span class="field-label">Group name</span>
+        <input type="text" id="groupInput" placeholder="e.g. Work, Social, News..." autocomplete="off" maxlength="40">
+      </label>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="groupCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="groupSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link Modal -->
+  <div class="modal-overlay" id="linkModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="linkModalTitle">
+      <h3 class="modal-title" id="linkModalTitle">New Link</h3>
+      <label class="field">
+        <span class="field-label">Title</span>
+        <input type="text" id="linkTitleInput" placeholder="e.g. GitHub, Gmail..." autocomplete="off" maxlength="60">
+      </label>
+      <label class="field">
+        <span class="field-label">URL</span>
+        <input type="text" id="linkUrlInput" placeholder="https://..." autocomplete="off">
+      </label>
+      <p class="modal-hint" id="linkModalHint"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="linkCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="linkSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirmModal" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h3 class="modal-title" id="confirmTitle">Delete?</h3>
+      <p class="modal-text" id="confirmText">Are you sure?</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+        <button class="btn btn-danger" id="confirmOkBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
