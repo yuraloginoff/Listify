@@ -8,7 +8,7 @@ A clean, minimal start page for organizing your favorite links into groups. All 
 
 - **Link groups** — organize links into named lists (Work, Social, News, etc.)
 - **Full CRUD** — create, edit, and delete both groups and individual links
-- **Auto title fetch** — paste a URL and the title is auto-filled from the page's `<title>` tag
+- **Auto title fetch** — paste a URL and the title is auto-filled from the page's `<title>` tag (with multi-proxy fallback)
 - **Change parent group** — move a link to a different group via the dropdown in the edit modal
 - **Reorder links** — move links up and down within a group
 - **Web search** — search bar submits queries to DuckDuckGo in the current tab
@@ -17,12 +17,13 @@ A clean, minimal start page for organizing your favorite links into groups. All 
 - **Export / Import** — backup and restore all data as a JSON file
 - **Responsive** — works great on desktop and mobile
 - **Favicons** — automatically fetches website icons
+- **System fonts** — uses native OS fonts for full Cyrillic and Greek support, no external font dependencies
 
 ## Tech
 
 - Vanilla HTML, CSS, JavaScript — no frameworks, no dependencies
 - Data persisted in browser localStorage
-- Cabinet Grotesk + Satoshi fonts via Fontshare
+- System font stack (Segoe UI, Roboto, San Francisco, etc.)
 
 ## Usage
 
