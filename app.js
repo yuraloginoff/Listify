@@ -204,7 +204,7 @@
           ${faviconUrl ? `<img src="${faviconUrl}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span style="display:none">${escapeHtml(initial)}</span>` : escapeHtml(initial)}
         </span>
         <div class="link-content">
-          <a class="link-title" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.title)}</a>
+          <a class="link-title" href="${safeUrl}" rel="noopener noreferrer">${escapeHtml(link.title)}</a>
         </div>
         <div class="link-actions">
           <button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', -1)" ${index === 0 ? 'disabled style="opacity:0.3"' : ''} title="Move up" aria-label="Move up">
@@ -280,17 +280,23 @@
   async function fetchTitle(url) {
     if (titleFetchController) titleFetchController.abort();
     titleFetchController = new AbortController();
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-    try {
-      const resp = await fetch(proxyUrl, { signal: titleFetchController.signal });
-      const html = await resp.text();
-      const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        console.error('Title fetch failed:', e);
+    const proxies = [
+      u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+      u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+      u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    ];
+    for (const makeProxy of proxies) {
+      try {
+        const proxyUrl = makeProxy(url);
+        const resp = await fetch(proxyUrl, { signal: titleFetchController.signal });
+        if (!resp.ok) continue;
+        const html = await resp.text();
+        const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+        if (match && match[1]) {
+          return match[1].trim();
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') return '';
       }
     }
     return '';
