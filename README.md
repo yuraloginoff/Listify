@@ -2,7 +2,7 @@
 
 A clean, minimal start page for organizing your favorite links into groups. All data is stored in your browser's localStorage — no backend required.
 
-**Live demo:** [listify-black.vercel.app](https://listify-black.vercel.app)
+**Live demo:** [yuraloginoff.github.io/listify](https://yuraloginoff.github.io/listify/)
 
 ## Features
 
