@@ -207,17 +207,14 @@
           <a class="link-title" href="${safeUrl}" rel="noopener noreferrer">${escapeHtml(link.title)}</a>
         </div>
         <div class="link-actions">
-          <button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', -1)" ${index === 0 ? 'disabled style="opacity:0.3"' : ''} title="Move up" aria-label="Move up">
+          ${index > 0 ? `<button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', -1)" title="Move up" aria-label="Move up">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-          </button>
-          <button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', 1)" ${index === total - 1 ? 'disabled style="opacity:0.3"' : ''} title="Move down" aria-label="Move down">
+          </button>` : ''}
+          ${index < total - 1 ? `<button class="link-action-btn move" onclick="App.moveLink('${groupId}', '${link.id}', 1)" title="Move down" aria-label="Move down">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
+          </button>` : ''}
           <button class="link-action-btn" onclick="App.openLinkModal('${link.id}', '${groupId}')" title="Edit link" aria-label="Edit link">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="link-action-btn danger" onclick="App.deleteLink('${groupId}', '${link.id}')" title="Delete link" aria-label="Delete link">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
       </li>
@@ -313,6 +310,8 @@
     const group = state.groups.find(g => g.id === groupId);
     if (!group) return;
 
+    const deleteBtn = document.getElementById('linkDeleteBtn');
+
     if (linkId) {
       const link = group.links.find(l => l.id === linkId);
       if (!link) return;
@@ -320,11 +319,18 @@
       linkModalTitle.textContent = 'Edit Link';
       linkUrlInput.value = link.url;
       linkTitleInput.value = link.title;
+      deleteBtn.hidden = false;
+      deleteBtn.onclick = () => {
+        closeLinkModal();
+        deleteLink(groupId, linkId);
+      };
     } else {
       editingLink = { groupId, linkId: null };
       linkModalTitle.textContent = 'New Link';
       linkUrlInput.value = '';
       linkTitleInput.value = '';
+      deleteBtn.hidden = true;
+      deleteBtn.onclick = null;
     }
     populateGroupSelect(groupId);
     linkModalHint.textContent = '';
