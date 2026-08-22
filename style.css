@@ -345,6 +345,18 @@ input { font: inherit; color: inherit; }
   align-items: center;
 }
 
+.group-actions-left {
+  opacity: 0;
+  transition: opacity var(--transition);
+  flex-shrink: 0;
+}
+
+.group-card:hover .group-actions-left { opacity: 1; }
+
+.group-actions-right {
+  flex-shrink: 0;
+}
+
 .group-action-btn.add {
   color: var(--color-text-muted);
 }

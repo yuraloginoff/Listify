@@ -169,17 +169,19 @@
     return `
       <section class="group-card" data-group-id="${group.id}">
         <div class="group-header">
+          <div class="group-actions group-actions-left">
+            <button class="group-action-btn" onclick="App.editGroup('${group.id}')" title="Edit group" aria-label="Edit group">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
           <div class="group-title-area">
             <span class="group-icon"></span>
             <span class="group-title">${escapeHtml(group.name)}</span>
             <span class="group-count">${group.links.length}</span>
           </div>
-          <div class="group-actions">
+          <div class="group-actions group-actions-right">
             <button class="group-action-btn add" onclick="App.openLinkModal(null, '${group.id}')" title="Add link" aria-label="Add link">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-            </button>
-            <button class="group-action-btn" onclick="App.editGroup('${group.id}')" title="Edit group" aria-label="Edit group">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
           </div>
         </div>
