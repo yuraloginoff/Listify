@@ -342,11 +342,17 @@ input { font: inherit; color: inherit; }
 .group-actions {
   display: flex;
   gap: var(--space-1);
-  opacity: 0;
-  transition: opacity var(--transition);
+  align-items: center;
 }
 
-.group-card:hover .group-actions { opacity: 1; }
+.group-action-btn.add {
+  color: var(--color-text-muted);
+}
+
+.group-action-btn.add:hover {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
 
 .group-action-btn {
   display: flex;
@@ -631,6 +637,5 @@ input { font: inherit; color: inherit; }
   .board { grid-template-columns: 1fr; }
   .header-clock { order: 2; margin-left: 0; }
   .header-actions { order: 1; margin-left: auto; }
-  .group-actions { opacity: 1; }
-  .link-actions { opacity: 1; }
+  .link-actions { opacity: 1; pointer-events: auto; }
 }
