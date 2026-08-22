@@ -27,7 +27,7 @@ A clean, minimal start page for organizing your favorite links into groups. All 
 
 ## Usage
 
-1. Open `index.html` in any modern browser, or visit the [live demo](https://listify-black.vercel.app)
+1. Open `index.html` in any modern browser, or visit the [live demo](https://yuraloginoff.github.io/listify)
 2. Click "New Group" to create a link group
 3. Click "Add link" within any group, paste a URL — the title fills in automatically
 4. Hover over links to reveal reorder, edit, and delete buttons
