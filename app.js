@@ -503,45 +503,22 @@
     state.groups = [
       {
         id: uid(), name: 'Work', links: [
-          { id: uid(), title: 'Синематографъ', url: 'https://vk.ru/cine1895' },
-          { id: uid(), title: '@cine1895', url: 'https://vkvideo.ru/@cine1895' },
-          { id: uid(), title: 'Perplexity', url: 'https://www.perplexity.ai' },
-          { id: uid(), title: 'GitHub', url: 'https://github.com/yuraloginoff' },
-          { id: uid(), title: 'Pixlr Photo Editor', url: 'https://pixlr.com/ru/editor/' },
+          { id: uid(), title: 'Gmail', url: 'https://mail.google.com' },
+          { id: uid(), title: 'GitHub', url: 'https://github.com' },
+          { id: uid(), title: 'Google Drive', url: 'https://drive.google.com' },
         ]
       },
       {
         id: uid(), name: 'Social', links: [
-          { id: uid(), title: 'Twitter', url: 'https://x.com' },
+          { id: uid(), title: 'X (Twitter)', url: 'https://x.com' },
           { id: uid(), title: 'Reddit', url: 'https://reddit.com' },
           { id: uid(), title: 'YouTube', url: 'https://youtube.com' },
-          { id: uid(), title: 'ВКонтакте', url: 'https://vk.ru/' },
-          { id: uid(), title: 'Веб-версия MAX', url: 'https://web.max.ru' },
         ]
       },
       {
         id: uid(), name: 'News', links: [
           { id: uid(), title: 'Hacker News', url: 'https://news.ycombinator.com' },
           { id: uid(), title: 'The Verge', url: 'https://theverge.com' },
-          { id: uid(), title: 'AlternativeTo', url: 'https://alternativeto.net/' },
-          { id: uid(), title: 'Inoreader', url: 'https://www.inoreader.com/folder/%D0%9A%D0%B8%D0%BD%D0%BE' },
-        ]
-      },
-      {
-        id: uid(), name: 'Films', links: [
-          { id: uid(), title: 'Кинопоиск', url: 'https://www.kinopoisk.ru' },
-          { id: uid(), title: 'Кинориум', url: 'https://ru.kinorium.com/user/381720/collection/movie/7318028/' },
-          { id: uid(), title: 'Letterboxd', url: 'https://letterboxd.com/cine1895/watchlist/' },
-          { id: uid(), title: 'TMDB', url: 'https://www.themoviedb.org/' },
-          { id: uid(), title: 'Кион', url: 'https://kion.ru/' },
-          { id: uid(), title: 'HD Rezka', url: 'https://rezka.ag/' },
-          { id: uid(), title: 'The Closet', url: 'https://the-criterion-closet.vercel.app/' },
-        ]
-      },
-      {
-        id: uid(), name: 'Common', links: [
-          { id: uid(), title: 'Яндекс', url: 'https://ya.ru/' },
-          { id: uid(), title: 'Погода', url: 'https://www.gismeteo.ru/' },
         ]
       },
     ];
