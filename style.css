@@ -283,10 +283,14 @@ input { font: inherit; color: inherit; }
 }
 
 .board {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 250px));
-  gap: var(--space-5);
-  align-items: start;
+  column-count: auto;
+  column-width: 250px;
+  column-gap: var(--space-5);
+}
+
+.group-card {
+  break-inside: avoid;
+  margin-bottom: var(--space-5);
 }
 
 /* === Group Card === */
