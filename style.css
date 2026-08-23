@@ -283,14 +283,15 @@ input { font: inherit; color: inherit; }
 }
 
 .board {
-  column-count: auto;
-  column-width: 250px;
-  column-gap: var(--space-5);
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .group-card {
-  break-inside: avoid;
-  margin-bottom: var(--space-5);
+  position: absolute;
+  width: 250px;
+  transition: transform 200ms ease, opacity 200ms ease;
 }
 
 /* === Group Card === */
