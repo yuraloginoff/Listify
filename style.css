@@ -291,7 +291,7 @@ input { font: inherit; color: inherit; }
 .group-card {
   position: absolute;
   width: 250px;
-  transition: transform 200ms ease, opacity 200ms ease;
+  /* transition: transform 200ms ease, opacity 200ms ease; */
 }
 
 /* === Group Card === */
