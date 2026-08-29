@@ -111,7 +111,7 @@
     if (!domain) return '';
     // Return cached data URL if available
     if (faviconCache[domain]) return faviconCache[domain];
-    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`;
+    return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`;
   }
 
   // ---- Favicon cache ----
@@ -138,25 +138,41 @@
       if (d && !faviconCache[d]) domains.add(d);
     }));
 
+    const proxies = [
+      u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+      u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+      u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    ];
+
     for (const domain of domains) {
-      try {
-        const res = await fetch(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`);
-        if (!res.ok) continue;
-        const blob = await res.blob();
-        const dataUrl = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(blob);
-        });
-        if (dataUrl) {
-          faviconCache[domain] = dataUrl;
-          // Update any visible img for this domain
-          const img = document.querySelector(`img[data-domain="${domain}"]`);
-          if (img) img.src = dataUrl;
+      const favUrl = `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`;
+      let cached = false;
+      for (const makeProxy of proxies) {
+        try {
+          const res = await fetch(makeProxy(favUrl));
+          if (!res.ok) continue;
+          const blob = await res.blob();
+          if (blob.size < 10) continue; // empty/error response
+          const dataUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+          if (dataUrl) {
+            faviconCache[domain] = dataUrl;
+            const img = document.querySelector(`img[data-domain="${domain}"]`);
+            if (img) img.src = dataUrl;
+            cached = true;
+            break;
+          }
+        } catch {
+          // try next proxy
         }
-      } catch {
-        // Skip on error
+      }
+      if (!cached) {
+        // Mark as failed so we don't keep retrying every render
+        faviconCache[domain] = getFaviconUrl(`https://${domain}`);
       }
     }
     saveFaviconCache();
