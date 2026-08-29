@@ -7,6 +7,7 @@
   'use strict';
 
   const STORAGE_KEY = 'startpage_data_v1';
+  const FAVICON_CACHE_KEY = 'listify_favicons_v1';
 
   // ---- Storage adapter (localStorage with in-memory fallback) ----
   const memStore = {};
@@ -26,6 +27,7 @@
   let editingGroup = null;   // { id } when editing, null when creating
   let editingLink = null;    // { groupId, linkId } when editing, null when creating
   let confirmCallback = null;
+  let faviconCache = {};
 
   // ---- DOM ----
   const board = document.getElementById('board');
@@ -107,7 +109,57 @@
   function getFaviconUrl(url) {
     const domain = getDomain(url);
     if (!domain) return '';
+    // Return cached data URL if available
+    if (faviconCache[domain]) return faviconCache[domain];
     return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`;
+  }
+
+  // ---- Favicon cache ----
+  function loadFaviconCache() {
+    try {
+      faviconCache = JSON.parse(storage.getItem(FAVICON_CACHE_KEY)) || {};
+    } catch {
+      faviconCache = {};
+    }
+  }
+
+  function saveFaviconCache() {
+    try {
+      storage.setItem(FAVICON_CACHE_KEY, JSON.stringify(faviconCache));
+    } catch (e) {
+      console.error('Failed to save favicon cache:', e);
+    }
+  }
+
+  async function fetchMissingFavicons() {
+    const domains = new Set();
+    state.groups.forEach(g => g.links.forEach(l => {
+      const d = getDomain(l.url);
+      if (d && !faviconCache[d]) domains.add(d);
+    }));
+
+    for (const domain of domains) {
+      try {
+        const res = await fetch(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`);
+        if (!res.ok) continue;
+        const blob = await res.blob();
+        const dataUrl = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+        if (dataUrl) {
+          faviconCache[domain] = dataUrl;
+          // Update any visible img for this domain
+          const img = document.querySelector(`img[data-domain="${domain}"]`);
+          if (img) img.src = dataUrl;
+        }
+      } catch {
+        // Skip on error
+      }
+    }
+    saveFaviconCache();
   }
 
   function getInitial(title) {
@@ -159,6 +211,7 @@
     emptyState.hidden = true;
     board.innerHTML = state.groups.map(renderGroup).join('');
     layoutMasonry();
+    fetchMissingFavicons();
   }
 
   // ---- Masonry layout ----
@@ -230,7 +283,7 @@
     return `
       <li class="link-item" data-link-id="${link.id}">
         <span class="link-favicon">
-          ${faviconUrl ? `<img src="${faviconUrl}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span style="display:none">${escapeHtml(initial)}</span>` : escapeHtml(initial)}
+          ${faviconUrl ? `<img src="${faviconUrl}" alt="" data-domain="${escapeHtml(domain)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span style="display:none">${escapeHtml(initial)}</span>` : escapeHtml(initial)}
         </span>
         <div class="link-content">
           <a class="link-title" href="${safeUrl}" rel="noopener noreferrer">${escapeHtml(link.title)}</a>
@@ -583,6 +636,7 @@
   // ---- Event wiring ----
   function init() {
     load();
+    loadFaviconCache();
     seedIfEmpty();
     initTheme();
 
